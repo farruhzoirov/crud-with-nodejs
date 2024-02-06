@@ -1,17 +1,17 @@
 td {
-    position: relative;
+      position: relative;
 }
 .fa {
-    font-size: 15px;
-    position: absolute;
-    top: 2px;
-    cursor: pointer;
+      font-size: 15px;
+      position: absolute;
+      top: 2px;
+      cursor: pointer;
 }
 .fa-trash {
-    right: 2px;
+      right: 2px;
 }
 .fa-pencil {
-    right: 20px;
+      right: 20px;
 }
 /*.dark-layer {*/
 /*      position: absolute;*/
@@ -43,5 +43,8 @@ td {
 /*}*/
 
 .hide  {
-    display: none !important;
+      display: none !important;
 }
+
+
+

@@ -1,121 +1,118 @@
-// const path = require('path');
-// const promise = require('fs/promises');
-//
-//
-// const createUser = async (req, res) => {
-//     try {
-//         const url = req.url
-//         const method = req.method
-//         if (url === '/create-user' && res.method === 'POST') {
-//             const body = [];
-//             // req.on('data', (chunk) => {
-//             //     body.push(chunk)
-//             // });
-//             //
-//             // req.on('end', () => {
-//             //
-//             // })
-//
-//             const {name, phone, tariff} = req.body;
-//             console.log(name)
-//
-//             if (!name.length || phone.length !== 12 || !tariff) {
-//                 return res.writeHead(400, {
-//                     ok: false,
-//                     message: 'Data is incorrect'
-//                 })
-//             }
-//             const users = JSON.parse(await fs.readFile(path.join(__dirname, '../', 'db', 'db.json'), {encoding: 'utf-8'}));
-//
-//
-//             users.push({
-//                 id: users.length + 1,
-//                 name,
-//                 phone,
-//                 tariff,
-//                 date: new Date().toLocaleString()
-//             })
-//
-//             await fs.writeFile(path.join(__dirname, '../', 'db', 'db.json'), JSON.stringify(users));
-//             console.log('hi')
-//             return res.writeHead(200, {
-//                 ok: true,
-//                 message: 'User created Successfully!'
-//             })
-//
-//         }
-//
-//     } catch (e) {
-//         console.log(e)
-//     }
-// }
-//
-// module.exports = {
-//     createUser: createUser
-// };
+import * as path from "path";
+import * as fs from "fs/promises";
 
-const path = require('path');
-const fs = require('fs/promises');
 
-const createUser = async (req, res) => {
-    try {
-        const url = req.url;
-        const method = req.method;
+// To create user's data
+export const createUser = async (req, res) => {
+  try {
+    const {name, phone, tariff} = req.body;
 
-        if (url === '/create-user' && method === 'POST') {
-            const body = [];
 
-            req.on('data', (chunk) => {
-                body.push(chunk);
-            });
-
-            req.on('end', async () => {
-                const requestBody = Buffer.concat(body).toString();
-                const { name, phone, tariff } = JSON.parse(requestBody);
-
-                if (!name || phone.length !== 12 || !tariff) {
-                    res.writeHead(400, {
-                        'Content-Type': 'application/json',
-                    });
-                    res.end(JSON.stringify({
-                        ok: false,
-                        message: 'Data is incorrect',
-                    }));
-                } else {
-                    const users = JSON.parse(await fs.readFile(path.join(__dirname, '../', 'db', 'db.json'), { encoding: 'utf-8' }));
-
-                    users.push({
-                        id: users.length + 1,
-                        name,
-                        phone,
-                        tariff,
-                        date: new Date().toLocaleString(),
-                    });
-
-                    await fs.writeFile(path.join(__dirname, '../', 'db', 'db.json'), JSON.stringify(users));
-
-                    res.writeHead(200, {
-                        'Content-Type': 'application/json',
-                    });
-                    res.end(JSON.stringify({
-                        ok: true,
-                        message: 'User created successfully!',
-                    }));
-                }
-            });
-        }
-    } catch (e) {
-        console.error(e);
-        res.writeHead(500, {
-            'Content-Type': 'application/json',
-        });
-        res.end(JSON.stringify({
-            ok: false,
-            message: 'Internal Server Error',
-        }));
+    if (!name?.length || phone?.length !== 12 || !tariff) {
+      return res.status(400).send({
+        ok: false,
+        message: 'Malumotlar xato'
+      });
     }
+    const users = JSON.parse(await fs.readFile(path.join('db', 'db.json'), {encoding: 'utf-8'})) || [];
+
+    users.push({
+      id: users.length + 1,
+      name,
+      phone,
+      tariff,
+      date: new Date().toLocaleString()
+    })
+
+    await fs.writeFile(path.join('db', 'db.json'), JSON.stringify(users, null, 2))
+
+    return res.status(200).send({
+      ok: true,
+      message: 'User created successfully'
+    });
+  } catch (e) {
+
+  }
 };
 
-module.exports = {
-    createUser: createUser,
+// To get user's data
+export const getUsers = async (req, res) => {
+  try {
+    const users = JSON.parse(await fs.readFile(path.join('db', 'db.json'), {encoding: 'utf-8'}));
+
+    return res.status(200).send(JSON.stringify({
+      ok: true,
+      users
+    }));
+  } catch (e) {
+
+  }
+};
+// To delete user's data
+export const deleteUsers = async (req, res) => {
+  try {
+    const {id} = req.body;
+
+    const users = JSON.parse(await fs.readFile(path.join('db', 'db.json'), {encoding: 'utf-8'}))
+
+    const filteredUser = users.filter(user => +user.id !== +id);
+
+    await fs.writeFile(path.join('db', 'db.json'), JSON.stringify(filteredUser, null, 2))
+
+    return res.status(200).send({
+      ok: true,
+      message: 'User deleted successfully'
+    })
+  } catch (e) {
+  }
+}
+
+
+// To update user's data
+export const updateUsers = async (req, res) => {
+  try {
+    const {id, name, phone, tariff} = req.body;
+
+    if (!id || !name?.length || phone?.length !== 12 || !tariff) {
+      return res.status(400).send({
+        ok: false,
+        message: 'Information is not complete'
+      });
+    }
+    let currentUsers = JSON.parse(await fs.readFile(path.join('db', 'db.json'), {encoding: 'utf-8'}) || []);
+    const toUptadeIndex =  currentUsers.findIndex(user => user.id === id);
+
+    if (toUptadeIndex === -1) {
+      return res.status(404).send({
+        ok:false,
+        message:'User not found'
+      })
+    }
+
+    const userToUpdate = currentUsers[toUptadeIndex];
+    userToUpdate.name = name
+    userToUpdate.phone = phone
+    userToUpdate.tariff = tariff
+
+    try {
+      await fs.writeFile(path.join('db', 'db.json'), JSON.stringify(currentUsers, null, 2));
+      res.status(200).json({
+        ok: true,
+        message: 'User updated successfully'
+      });
+    } catch (error) {
+      console.error('Error writing file:', error);
+      res.status(500).json({
+        ok: false,
+        message: 'Failed to update user data'
+      });
+    }
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).send({
+      ok: false,
+      message: 'Some error'
+    });
+  }
 };
