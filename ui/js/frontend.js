@@ -47,7 +47,6 @@ const fetchUserData = () => {
 
 fetchUserData()
 
-
 // When modal opens
 const modalPressingHandler = (id) => {
   userId = +id;
@@ -70,7 +69,6 @@ const modalPressingHandler = (id) => {
       })
 }
 
-
 modalUserChangeForm.addEventListener('submit',  (e) => {
   e.preventDefault();
   const changedBody = {
@@ -79,7 +77,6 @@ modalUserChangeForm.addEventListener('submit',  (e) => {
     phone: modalPhoneNumber.value,
     tariff: modalSelectBox.value
   }
-
   fetch('http://localhost:5000/update-user', {
     headers:{
       'Content-type':'application/json; charset=utf-8'

@@ -7,13 +7,13 @@ export const createUser = async (req, res) => {
   try {
     const {name, phone, tariff} = req.body;
 
-
     if (!name?.length || phone?.length !== 12 || !tariff) {
       return res.status(400).send({
         ok: false,
         message: 'Malumotlar xato'
       });
     }
+    
     const users = JSON.parse(await fs.readFile(path.join('db', 'db.json'), {encoding: 'utf-8'})) || [];
 
     users.push({
